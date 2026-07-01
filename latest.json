@@ -1,0 +1,46 @@
+{
+  "date": "2026-07-01",
+  "theme": "Vertical AI Is Replacing Horizontal Software",
+  "brief": [
+    {
+      "title": "Kapture CX raises $10M to go deeper, not wider",
+      "summary": "The Bengaluru agentic AI platform closed a pre-Series B led by Bajaj Finserv Ventures, already serving 1,000+ enterprise clients including names inside Tata and Reliance.",
+      "url": "https://startuptalky.com/news/daily-indian-funding-roundup-key-news-june-30-2026-oyo-parent-prism-files-udrhp/",
+      "domain": "kapturecx.com"
+    },
+    {
+      "title": "OpenAI is building its own chip",
+      "summary": "A custom inference chip built with Broadcom, joining Google, Apple, and SpaceX in cutting single-supplier dependence on Nvidia.",
+      "url": "https://techcrunch.com/",
+      "domain": "openai.com"
+    },
+    {
+      "title": "India's platforms fight a regulation together",
+      "summary": "Eternal, Meesho, and Swiggy jointly challenge Karnataka's gig worker welfare law, which funds a worker pool from every transaction — a margin risk for thin-margin platforms.",
+      "url": "https://startuptalky.com/news/daily-indian-funding-roundup-key-news-june-29-2026/",
+      "domain": "swiggy.com"
+    }
+  ],
+  "breakdown": {
+    "company": "Kapture CX",
+    "domain": "kapturecx.com",
+    "category": "Agentic AI · Enterprise Support · Bengaluru",
+    "what": "A verticalized, agentic AI platform built specifically for enterprise customer support — handling tickets, escalations, and operational workflows with a human still in the loop.",
+    "why": "Horizontal AI tools promise to do everything and often do nothing particularly well. Kapture picked one function, went deep, and built something enterprises with real compliance needs will actually trust.",
+    "lesson": "Breadth is easy to pitch and hard to defend. Depth is harder to pitch and much harder to copy."
+  },
+  "trend": {
+    "paragraphs": [
+      "For the last two years, the biggest AI money went to horizontal platforms — tools that could technically serve any industry. That era is fading.",
+      "The shift is strategic, not just technical. Horizontal tools compete on features and price, a race to the bottom. Vertical tools compete on domain trust: does this system actually understand insurance claims, hospital scheduling, or support tickets well enough that a buyer will bet their operations on it?",
+      "For founders, this changes the pitch. \"We use AI\" is no longer a differentiator. \"We solved this one expensive, specific problem better than a human team could\" is."
+    ]
+  },
+  "editors_note": {
+    "paragraphs": [
+      "There's a pattern hiding across today's stories that's easy to miss if you read them separately. Kapture CX went narrow and won. OpenAI is going vertical on hardware, not just software. And India's largest consumer platforms are fighting a law that threatens the thin margins their horizontal, do-everything models depend on.",
+      "Horizontal scale used to be the safest bet in tech. Build once, sell to everyone, let volume do the work. That playbook is getting more fragile — regulation hits horizontal platforms harder, and competition hits horizontal AI harder as models converge. Depth is becoming the moat breadth used to be.",
+      "If you're deciding where to plant your flag this year: pick the narrowest version of your idea that still matters to someone, and go own that completely before you go wide."
+    ]
+  }
+}
