@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Founder OS — Daily Edition for Builders</title>
+<title>Catalyst — Daily Edition for Builders</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -18,10 +18,12 @@
   .masthead{border-bottom:3px solid var(--ink); padding:22px 24px 16px; max-width:900px; margin:0 auto;}
   .masthead-top{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;}
   .brand{font-family:'Fraunces', serif; font-weight:700; font-size:38px; letter-spacing:-0.5px;}
-  .brand span{color:var(--signal-deep);}
+  .brand .mark{color:var(--signal-deep);}
   .meta{font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); text-align:right;}
   .tagline{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted); margin-top:6px;}
   .theme-banner{max-width:900px; margin:0 auto; padding:20px 24px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--line);}
+  .theme-cover{max-width:900px; margin:0 auto; padding:0 24px;}
+  .theme-cover img{width:100%; height:220px; object-fit:cover; border-radius:12px; display:block; margin-top:20px;}
   .theme-tag{font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; background:var(--forest); color:var(--paper); padding:4px 8px; border-radius:3px; white-space:nowrap;}
   .theme-text{font-family:'Fraunces', serif; font-weight:600; font-size:19px;}
   .wrap{max-width:900px; margin:0 auto; padding:0 24px;}
@@ -30,8 +32,10 @@
   .section-label{display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--signal-deep); margin-bottom:18px;}
   .section-label svg{width:14px; height:14px; stroke:var(--signal-deep);}
   .brief-grid{display:flex; flex-direction:column; gap:14px;}
-  .brief-card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; transition:transform .15s ease, box-shadow .15s ease;}
+  .brief-card{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; transition:transform .15s ease, box-shadow .15s ease;}
   .brief-card:hover{transform:translateY(-2px); box-shadow:0 6px 18px rgba(22,38,31,0.08);}
+  .brief-photo{width:100%; height:160px; object-fit:cover; display:block; background:#F0EDE3;}
+  .brief-card-inner{padding:16px 18px; display:flex; gap:14px; align-items:flex-start;}
   .logo-badge{width:40px; height:40px; border-radius:8px; background:#F0EDE3; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;}
   .logo-badge img{width:100%; height:100%; object-fit:cover;}
   .brief-body h3{font-family:'Fraunces', serif; font-weight:600; font-size:16.5px; margin-bottom:4px;}
@@ -68,7 +72,7 @@
 
   <div class="masthead">
     <div class="masthead-top">
-      <div class="brand">Founder<span>OS</span></div>
+      <div class="brand">Catalyst<span class="mark">.</span></div>
       <div class="meta" id="dateMeta">Daily Edition</div>
     </div>
     <div class="tagline">Presented by Saksham — Entrepreneurship Club, IIM Udaipur · Curated by Atlas, AI Editor</div>
@@ -100,9 +104,24 @@ function logoUrl(domain) {
   return domain ? `https://logo.clearbit.com/${domain}` : '';
 }
 
+function faviconUrl(domain) {
+  return domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : '';
+}
+
 function fallbackAvatar(name) {
   const initials = (name || '?').trim().slice(0, 2).toUpperCase();
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=2C4A3B&color=F6F3EC&size=128&bold=true&font-size=0.4`;
+}
+
+function handleLogoError(img, domain, name) {
+  const stage = img.dataset.stage || '1';
+  if (stage === '1' && domain) {
+    img.dataset.stage = '2';
+    img.src = faviconUrl(domain);
+  } else {
+    img.onerror = null;
+    img.src = fallbackAvatar(name);
+  }
 }
 
 function render(edition) {
@@ -111,11 +130,14 @@ function render(edition) {
 
   const briefHtml = edition.brief.map(item => `
     <div class="brief-card">
-      <div class="logo-badge"><img src="${logoUrl(item.domain)}" alt="${item.title}" onerror="this.onerror=null; this.src='${fallbackAvatar(item.domain)}'"></div>
-      <div class="brief-body">
-        <h3>${item.title}</h3>
-        <p>${item.summary}</p>
-        <a class="read-more" href="${item.url}" target="_blank" rel="noopener">Read more ${icon('link')}</a>
+      ${item.image ? `<img class="brief-photo" src="${item.image}" alt="${item.title}">` : ''}
+      <div class="brief-card-inner">
+        <div class="logo-badge"><img src="${logoUrl(item.domain)}" alt="${item.title}" onerror="handleLogoError(this, '${item.domain}', '${item.title}')"></div>
+        <div class="brief-body">
+          <h3>${item.title}</h3>
+          <p>${item.summary}</p>
+          <a class="read-more" href="${item.url}" target="_blank" rel="noopener">Read more ${icon('link')}</a>
+        </div>
       </div>
     </div>
   `).join('');
@@ -124,7 +146,7 @@ function render(edition) {
   const breakdownHtml = `
     <div class="breakdown-card">
       <div class="breakdown-head">
-        <img src="${logoUrl(bd.domain)}" alt="${bd.company}" onerror="this.onerror=null; this.src='${fallbackAvatar(bd.company)}'">
+        <img src="${logoUrl(bd.domain)}" alt="${bd.company}" onerror="handleLogoError(this, '${bd.domain}', '${bd.company}')">
         <div>
           <h2>${bd.company}</h2>
           <div class="sub">${bd.category || ''}</div>
@@ -144,6 +166,7 @@ function render(edition) {
       <div class="theme-tag">Today's Theme</div>
       <div class="theme-text">${edition.theme}</div>
     </div>
+    ${edition.theme_image ? `<div class="theme-cover"><img src="${edition.theme_image}" alt="${edition.theme}"></div>` : ''}
     <div class="wrap">
       <section>
         <div class="section-label">${icon('brief')}Startup Brief</div>
