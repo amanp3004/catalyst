@@ -16,6 +16,7 @@ workflow in .github/workflows/daily-edition.yml
 import os
 import re
 import json
+import time
 import datetime
 import feedparser
 import requests
@@ -88,27 +89,20 @@ WORKFLOW:
    - trend_to_watch: 2-3 short paragraphs explaining the broader shift, no
      jargon, focused on strategic implications for founders.
    - builder_lexicon: exactly ONE entrepreneurial/startup concept that best
-     complements today's theme (choose the term AFTER the theme is set, so
-     it reinforces the day's learning — e.g. a fundraising-themed edition
-     might teach "SAFE Note", a growth-themed edition "North Star Metric",
-     a marketplace-themed edition "Network Effects"). Draw from the standard
-     startup/VC/product vocabulary (MVP, Pivot, Product-Market Fit, CAC,
-     LTV, Burn Rate, Runway, Churn, ARR, MRR, TAM, SAM, SOM, GTM, Flywheel,
-     Network Effects, North Star Metric, Moat, Freemium, Blitzscaling,
-     ESOP, SAFE Note, Convertible Note, Cap Table, Seed Round, Series A,
-     Unicorn, Decacorn, or an equally standard term not on this list) —
-     never invent a term. Do not simply define it: explain it in a way that
-     sharpens business thinking. Keep it concise — total reading time
-     should be about 30-45 seconds:
-       - definition: max 2 short, jargon-free paragraphs.
-       - why_it_matters: max 2-3 sentences on why founders/PMs/consultants/
-         MBA students should know this.
-       - real_world_example: ONE concise sentence naming a well-known
-         company (e.g. "Slack famously pivoted from a failed online game
-         into a workplace communication platform.").
-       - reading_time: short string, e.g. "30 sec read".
-     Avoid repeating a term used in a recent edition if that context is
-     provided; otherwise pick freshly based on today's theme.
+     complements today's theme, chosen AFTER the theme is set (e.g. a
+     fundraising-themed edition → "SAFE Note", a growth-themed edition →
+     "North Star Metric"). Draw from standard startup/VC/product vocabulary
+     (MVP, Pivot, Product-Market Fit, CAC, LTV, Burn Rate, Runway, Churn,
+     ARR, MRR, TAM, SAM, SOM, GTM, Flywheel, Network Effects, North Star
+     Metric, Moat, Freemium, Blitzscaling, ESOP, SAFE Note, Convertible
+     Note, Cap Table, Seed Round, Series A, Unicorn, Decacorn, or an
+     equally standard term) — never invent a term. Explain it in a way
+     that sharpens business thinking, not just defines it, but keep it
+     tight. Total reading time ~15-20 seconds: definition is EXACTLY 1-2
+     sentences (roughly 25-40 words, one short paragraph — never multiple
+     paragraphs, this is a quick-hit definition, not an essay), why it
+     matters (1-2 sentences), one real-world example sentence naming a
+     known company.
    - editors_note: 2-3 short paragraphs, one thoughtful reflection that ties
      the whole edition into one coherent story with one memorable idea.
 
@@ -143,11 +137,11 @@ matching exactly this schema:
   },
   "trend": {"paragraphs": ["string", "string"]},
   "builder_lexicon": {
-    "term": "string (e.g. 'Pivot')",
-    "definition": "string (max 2 short paragraphs, separate paragraphs with \\n\\n)",
-    "why_it_matters": "string (2-3 sentences)",
-    "real_world_example": "string (1 concise sentence)",
-    "reading_time": "string (e.g. '30 sec read')"
+    "term": "string",
+    "definition": "string (1-2 sentences only, ~25-40 words)",
+    "why_it_matters": "string (1-2 sentences)",
+    "real_world_example": "string (1 sentence)",
+    "reading_time": "string (e.g. '20 sec read')"
   },
   "editors_note": {"paragraphs": ["string", "string", "string"]}
 }
@@ -248,14 +242,21 @@ only the JSON object."""
 # ---------------------------------------------------------------------------
 
 def search_openverse(query):
-    """Return an openly-licensed photo URL for a search query, or None."""
+    """Return an openly-licensed photo URL for a search query, or None.
+
+    Openverse's unauthenticated tier throttles fast bursts of requests, so
+    callers should space out repeated calls (see enrich_with_images). If a
+    query comes back empty we retry once with a broader (shorter) query
+    before giving up.
+    """
     if not query:
         return None
-    try:
+
+    def _try(q):
         resp = requests.get(
             "https://api.openverse.org/v1/images/",
             params={
-                "q": query,
+                "q": q,
                 "page_size": 3,
                 "mature": "false",
                 "license_type": "commercial,modification",  # broad, reusable
@@ -263,14 +264,31 @@ def search_openverse(query):
             headers={"User-Agent": "CatalystNewsletterBot/1.0"},
             timeout=15,
         )
+        if resp.status_code == 429:
+            # rate limited — back off once and retry the same request
+            time.sleep(3)
+            resp = requests.get(
+                resp.url,
+                headers={"User-Agent": "CatalystNewsletterBot/1.0"},
+                timeout=15,
+            )
         resp.raise_for_status()
         results = resp.json().get("results", [])
         for item in results:
-            url = item.get("url")
-            if url and url.lower().split("?")[0].endswith((".jpg", ".jpeg", ".png", ".webp")):
-                return url
-        if results:
-            return results[0].get("url")
+            item_url = item.get("url")
+            if item_url and item_url.lower().split("?")[0].endswith((".jpg", ".jpeg", ".png", ".webp")):
+                return item_url
+        return results[0].get("url") if results else None
+
+    try:
+        url = _try(query)
+        if url:
+            return url
+        # broaden: drop to the first 2 words and retry once
+        broad = " ".join(query.split()[:2])
+        if broad and broad != query:
+            time.sleep(1)
+            return _try(broad)
     except Exception as e:
         print(f"[warn] Openverse search failed for '{query}': {e}")
     return None
@@ -279,6 +297,7 @@ def search_openverse(query):
 def enrich_with_images(edition):
     edition["theme_image"] = search_openverse(edition.get("theme_image_query"))
     for item in edition.get("brief", []):
+        time.sleep(1.2)  # stay under Openverse's unauthenticated rate limit
         item["image"] = search_openverse(item.get("image_query"))
     return edition
 
