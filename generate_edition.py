@@ -71,7 +71,7 @@ WORKFLOW:
    Good: "Vertical AI Is Replacing Horizontal Software", "Distribution
    Beats Technology", "The Great Unbundling of Venture Capital"
    Weak/too plain: "AI Trends in Startups", "Changes in the Funding Market"
-3. Curate exactly four sections:
+3. Curate exactly five sections:
    - startup_brief: 3 stories. Each needs a catchy, magazine-style title —
      not a dry restatement of the headline. Titles should hook attention
      while staying factually accurate (no clickbait exaggeration, no
@@ -87,6 +87,28 @@ WORKFLOW:
      memorable one-sentence lesson for founders.
    - trend_to_watch: 2-3 short paragraphs explaining the broader shift, no
      jargon, focused on strategic implications for founders.
+   - builder_lexicon: exactly ONE entrepreneurial/startup concept that best
+     complements today's theme (choose the term AFTER the theme is set, so
+     it reinforces the day's learning — e.g. a fundraising-themed edition
+     might teach "SAFE Note", a growth-themed edition "North Star Metric",
+     a marketplace-themed edition "Network Effects"). Draw from the standard
+     startup/VC/product vocabulary (MVP, Pivot, Product-Market Fit, CAC,
+     LTV, Burn Rate, Runway, Churn, ARR, MRR, TAM, SAM, SOM, GTM, Flywheel,
+     Network Effects, North Star Metric, Moat, Freemium, Blitzscaling,
+     ESOP, SAFE Note, Convertible Note, Cap Table, Seed Round, Series A,
+     Unicorn, Decacorn, or an equally standard term not on this list) —
+     never invent a term. Do not simply define it: explain it in a way that
+     sharpens business thinking. Keep it concise — total reading time
+     should be about 30-45 seconds:
+       - definition: max 2 short, jargon-free paragraphs.
+       - why_it_matters: max 2-3 sentences on why founders/PMs/consultants/
+         MBA students should know this.
+       - real_world_example: ONE concise sentence naming a well-known
+         company (e.g. "Slack famously pivoted from a failed online game
+         into a workplace communication platform.").
+       - reading_time: short string, e.g. "30 sec read".
+     Avoid repeating a term used in a recent edition if that context is
+     provided; otherwise pick freshly based on today's theme.
    - editors_note: 2-3 short paragraphs, one thoughtful reflection that ties
      the whole edition into one coherent story with one memorable idea.
 
@@ -120,6 +142,13 @@ matching exactly this schema:
     "lesson": "string"
   },
   "trend": {"paragraphs": ["string", "string"]},
+  "builder_lexicon": {
+    "term": "string (e.g. 'Pivot')",
+    "definition": "string (max 2 short paragraphs, separate paragraphs with \\n\\n)",
+    "why_it_matters": "string (2-3 sentences)",
+    "real_world_example": "string (1 concise sentence)",
+    "reading_time": "string (e.g. '30 sec read')"
+  },
   "editors_note": {"paragraphs": ["string", "string", "string"]}
 }
 """
