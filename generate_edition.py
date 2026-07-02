@@ -25,7 +25,7 @@ import requests
 # ---------------------------------------------------------------------------
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-MODEL = os.environ.get("FOUNDEROS_MODEL", "gemini-3-flash")
+MODEL = os.environ.get("FOUNDEROS_MODEL", "gemini-3-flash-preview")
 # Images via Openverse (openverse.org) — free, no signup, no API key needed.
 
 if not GEMINI_API_KEY:
