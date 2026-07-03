@@ -5,9 +5,10 @@ Atlas Editorial Manifesto, and writes the result as JSON for the website
 to render.
 
 Run manually:
-    GEMINI_API_KEY=AIza... python generate_edition.py
+    GEMINI_API_KEY=AIza... PEXELS_API_KEY=... python generate_edition.py
 
-Get a free key (no credit card) at https://aistudio.google.com/apikey
+Get a free Gemini key (no credit card) at https://aistudio.google.com/apikey
+Get a free Pexels key (no credit card) at https://www.pexels.com/api/
 
 In production this is run automatically every morning by the GitHub Actions
 workflow in .github/workflows/daily-edition.yml
@@ -27,12 +28,18 @@ import requests
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 MODEL = os.environ.get("FOUNDEROS_MODEL", "gemini-2.5-flash")
-# Images via Openverse (openverse.org) — free, no signup, no API key needed.
+PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 
 if not GEMINI_API_KEY:
     raise SystemExit(
         "GEMINI_API_KEY environment variable is not set.\n"
         "Get a free key (no credit card needed) at https://aistudio.google.com/apikey"
+    )
+
+if not PEXELS_API_KEY:
+    raise SystemExit(
+        "PEXELS_API_KEY environment variable is not set.\n"
+        "Get a free key (no credit card needed) at https://www.pexels.com/api/"
     )
 
 RSS_SOURCES = {
@@ -115,15 +122,21 @@ are confident about (e.g. "openai.com", not "open-ai.com" or a guess) —
 if genuinely unsure of the exact domain, use your best confident guess at
 the root domain rather than a subpage or made-up variant.
 
+For every image_query and theme_image_query, write a plain, literal,
+photographable scene (e.g. "team meeting office", "server room data
+center", "city skyline finance") — these are used as stock-photo search
+terms, not headlines, so keep them concrete and generic rather than
+abstract or metaphorical.
+
 OUTPUT FORMAT: Respond with ONLY valid JSON, no markdown fences, no preamble,
 matching exactly this schema:
 
 {
   "date": "YYYY-MM-DD",
   "theme": "string",
-  "theme_image_query": "2-4 word visual search phrase for a stock photo that captures the theme (e.g. 'server room data center', 'city skyline finance')",
+  "theme_image_query": "2-4 word literal, photographable stock-photo search phrase for the theme (e.g. 'server room data center', 'city skyline finance')",
   "brief": [
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "image_query": "2-4 word visual search phrase for a relevant stock photo (e.g. 'startup office team', 'robot factory automation')"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "image_query": "2-4 word literal, photographable stock-photo search phrase (e.g. 'startup office team', 'robot factory automation')"},
     {"title": "string", "summary": "string", "url": "string", "domain": "string", "image_query": "string"},
     {"title": "string", "summary": "string", "url": "string", "domain": "string", "image_query": "string"}
   ],
@@ -238,47 +251,43 @@ only the JSON object."""
 
 
 # ---------------------------------------------------------------------------
-# 3b. FETCH IMAGES (Openverse — free, no API key required)
+# 3b. FETCH IMAGES (Pexels — free tier, requires API key)
 # ---------------------------------------------------------------------------
 
-def search_openverse(query):
-    """Return an openly-licensed photo URL for a search query, or None.
+def search_pexels(query):
+    """Return a photo URL from Pexels for a search query, or None.
 
-    Openverse's unauthenticated tier throttles fast bursts of requests, so
-    callers should space out repeated calls (see enrich_with_images). If a
-    query comes back empty we retry once with a broader (shorter) query
-    before giving up.
+    Pexels' free tier allows 200 requests/hour, so a small pacing delay in
+    enrich_with_images is plenty; no aggressive backoff needed like with
+    Openverse. If a query comes back empty we retry once with a broader
+    (shorter) query before giving up.
     """
     if not query:
         return None
 
     def _try(q):
         resp = requests.get(
-            "https://api.openverse.org/v1/images/",
-            params={
-                "q": q,
-                "page_size": 3,
-                "mature": "false",
-                "license_type": "commercial,modification",  # broad, reusable
-            },
-            headers={"User-Agent": "CatalystNewsletterBot/1.0"},
+            "https://api.pexels.com/v1/search",
+            params={"query": q, "per_page": 3, "orientation": "landscape"},
+            headers={"Authorization": PEXELS_API_KEY},
             timeout=15,
         )
         if resp.status_code == 429:
             # rate limited — back off once and retry the same request
-            time.sleep(3)
+            time.sleep(5)
             resp = requests.get(
                 resp.url,
-                headers={"User-Agent": "CatalystNewsletterBot/1.0"},
+                headers={"Authorization": PEXELS_API_KEY},
                 timeout=15,
             )
         resp.raise_for_status()
-        results = resp.json().get("results", [])
-        for item in results:
-            item_url = item.get("url")
-            if item_url and item_url.lower().split("?")[0].endswith((".jpg", ".jpeg", ".png", ".webp")):
-                return item_url
-        return results[0].get("url") if results else None
+        photos = resp.json().get("photos", [])
+        if photos:
+            src = photos[0].get("src", {})
+            # "large" is a good balance of quality vs. payload size for a
+            # card image; fall back to whatever sizes are actually present.
+            return src.get("large") or src.get("original") or src.get("medium")
+        return None
 
     try:
         url = _try(query)
@@ -287,18 +296,18 @@ def search_openverse(query):
         # broaden: drop to the first 2 words and retry once
         broad = " ".join(query.split()[:2])
         if broad and broad != query:
-            time.sleep(1)
+            time.sleep(0.5)
             return _try(broad)
     except Exception as e:
-        print(f"[warn] Openverse search failed for '{query}': {e}")
+        print(f"[warn] Pexels search failed for '{query}': {e}")
     return None
 
 
 def enrich_with_images(edition):
-    edition["theme_image"] = search_openverse(edition.get("theme_image_query"))
+    edition["theme_image"] = search_pexels(edition.get("theme_image_query"))
     for item in edition.get("brief", []):
-        time.sleep(1.2)  # stay under Openverse's unauthenticated rate limit
-        item["image"] = search_openverse(item.get("image_query"))
+        time.sleep(0.3)  # gentle pacing; well within Pexels' 200 req/hour limit
+        item["image"] = search_pexels(item.get("image_query"))
     return edition
 
 
@@ -336,7 +345,7 @@ if __name__ == "__main__":
     stories = collect_stories()
     print(f"Collected {len(stories)} raw stories. Curating with Gemini...")
     edition = curate_edition(stories)
-    print("Fetching relevant images...")
+    print("Fetching relevant images from Pexels...")
     edition = enrich_with_images(edition)
     save_edition(edition)
     print("Done.")
