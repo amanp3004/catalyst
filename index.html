@@ -281,14 +281,73 @@ if ("serviceWorker" in navigator) {
   );
 }
 
-async function enableNotifications() {
+function setButtonState(state) {
   const btn = document.getElementById("notifyBtn");
-  btn.disabled = true;
-  btn.textContent = "Requesting…";
+  if (state === "subscribed") {
+    btn.textContent = "✅ You're subscribed";
+    btn.disabled = true;
+  } else if (state === "blocked") {
+    btn.textContent = "🔕 Notifications blocked";
+    btn.disabled = true;
+  } else if (state === "requesting") {
+    btn.textContent = "Requesting…";
+    btn.disabled = true;
+  } else {
+    btn.textContent = "🔔 Get daily alerts";
+    btn.disabled = false;
+  }
+}
+
+// On every page load, reconcile the button with whatever the browser's
+// actual notification permission already is — this is what makes the
+// subscribed state survive a refresh instead of resetting to the default
+// "Get daily alerts" every time.
+async function syncNotificationButtonState() {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    return; // unsupported browser — leave the default button as-is
+  }
+
+  if (Notification.permission === "denied") {
+    setButtonState("blocked");
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const messaging = firebase.messaging();
+      // getToken() with an already-granted permission returns the existing
+      // token silently — it does NOT re-prompt the user.
+      const token = await messaging.getToken({
+        vapidKey: VAPID_KEY,
+        serviceWorkerRegistration: registration,
+      });
+      if (token) {
+        // Keep the Firestore record fresh (e.g. updated lastSeenAt) without
+        // bothering the user — this also self-heals cases where permission
+        // was granted but the original Firestore write failed silently.
+        await db.collection("subscribers").doc(token).set({
+          token,
+          subscribedAt: new Date().toISOString(),
+          platform: navigator.userAgent,
+        }, { merge: true });
+        setButtonState("subscribed");
+        return;
+      }
+    } catch (err) {
+      console.warn("Could not silently restore subscription state:", err);
+    }
+  }
+
+  setButtonState("default");
+}
+
+async function enableNotifications() {
+  setButtonState("requesting");
   try {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      btn.textContent = "🔕 Notifications blocked";
+      setButtonState("blocked");
       return;
     }
     const registration = await navigator.serviceWorker.ready;
@@ -303,17 +362,17 @@ async function enableNotifications() {
         subscribedAt: new Date().toISOString(),
         platform: navigator.userAgent,
       });
-      btn.textContent = "✅ You're subscribed";
+      setButtonState("subscribed");
     } else {
-      btn.disabled = false;
-      btn.textContent = "🔔 Get daily alerts";
+      setButtonState("default");
     }
   } catch (err) {
     console.error("Notification setup failed:", err);
-    btn.disabled = false;
-    btn.textContent = "🔔 Get daily alerts";
+    setButtonState("default");
   }
 }
+
+syncNotificationButtonState();
 </script>
 
 </body>
