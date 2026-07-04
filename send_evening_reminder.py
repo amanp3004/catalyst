@@ -61,14 +61,38 @@ Respond with ONLY valid JSON, no markdown fences:
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
             "generationConfig": {
                 "temperature": 0.9,
-                "maxOutputTokens": 300,
+                "maxOutputTokens": 1024,
                 "responseMimeType": "application/json",
+                # gemini-2.5-flash has extended "thinking" enabled by
+                # default, which consumes tokens from the same budget as
+                # the visible output. For a one-sentence JSON reply this
+                # reasoning is unnecessary, and with a small token ceiling
+                # it can silently eat the whole budget, leaving the
+                # response with no "parts" at all. Disabling it avoids
+                # that failure mode.
+                "thinkingConfig": {"thinkingBudget": 0},
             },
         },
         timeout=30,
     )
     response.raise_for_status()
-    text = response.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+    data = response.json()
+
+    try:
+        candidate = data["candidates"][0]
+        text = candidate["content"]["parts"][0]["text"].strip()
+    except (KeyError, IndexError) as e:
+        print("---- RAW GEMINI RESPONSE (missing expected fields) ----")
+        print(json.dumps(data, indent=2))
+        print("---- END RAW RESPONSE ----")
+        finish_reason = data.get("candidates", [{}])[0].get("finishReason", "unknown")
+        raise SystemExit(
+            f"Gemini response was missing expected fields ({e}). "
+            f"finishReason was '{finish_reason}' — if this is 'MAX_TOKENS', "
+            "raise maxOutputTokens further; if 'SAFETY' or 'RECITATION', "
+            "the prompt or source content triggered a content filter."
+        )
+
     text = re.sub(r"^```(json)?|```$", "", text, flags=re.MULTILINE).strip()
     return json.loads(text)
 
