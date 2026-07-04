@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <title>Catalyst — Daily Edition for Builders</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#16261F">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Catalyst">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -69,6 +76,10 @@
   footer{max-width:900px; margin:40px auto 0; padding:20px 24px 0; text-align:center; font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted);}
   footer .sig{font-weight:600; color:var(--ink); margin-bottom:4px;}
   .loading, .error{max-width:900px; margin:60px auto; padding:0 24px; font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--muted); text-align:center;}
+  .notify-bar{max-width:900px; margin:0 auto; padding:12px 24px; display:flex; justify-content:flex-end;}
+  .notify-btn{font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; background:var(--forest); color:var(--paper); border:none; padding:8px 14px; border-radius:20px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+  .notify-btn:hover{background:var(--signal-deep);}
+  .notify-btn[disabled]{opacity:0.6; cursor:default;}
   @media (max-width:600px){ .brand{font-size:28px;} .masthead-top{flex-direction:column; align-items:flex-start;} .meta{text-align:left;} }
 </style>
 </head>
@@ -80,6 +91,10 @@
       <div class="meta" id="dateMeta">Daily Edition</div>
     </div>
     <div class="tagline">Presented by Saksham — Entrepreneurship Club, IIM Udaipur · Curated by Atlas, AI Editor</div>
+  </div>
+
+  <div class="notify-bar">
+    <button class="notify-btn" id="notifyBtn" onclick="enableNotifications()">🔔 Get daily alerts</button>
   </div>
 
   <div id="app">
@@ -210,16 +225,94 @@ function render(edition) {
   `;
 }
 
-fetch('data/latest.json', { cache: 'no-store' })
-  .then(res => {
-    if (!res.ok) throw new Error('No edition found yet');
-    return res.json();
-  })
-  .then(render)
-  .catch(err => {
-    document.getElementById('app').innerHTML =
-      `<div class="error">Couldn't load today's edition (${err.message}). Once the generator has run at least once, it'll appear here.</div>`;
-  });
+function loadEdition() {
+  const bust = Date.now();
+  fetch(`data/latest.json?v=${bust}`, { cache: 'no-store' })
+    .then(res => {
+      if (!res.ok) throw new Error('No edition found yet');
+      return res.json();
+    })
+    .then(edition => {
+      if (edition.date !== window.__catalystCurrentDate) {
+        window.__catalystCurrentDate = edition.date;
+        render(edition);
+      }
+    })
+    .catch(err => {
+      document.getElementById('app').innerHTML =
+        `<div class="error">Couldn't load today's edition (${err.message}). Once the generator has run at least once, it'll appear here.</div>`;
+    });
+}
+
+loadEdition();
+// Check for a newer edition every 5 minutes, in case the tab is left open
+// across the daily generation run — updates in place, no manual reload needed.
+setInterval(loadEdition, 5 * 60 * 1000);
+</script>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- PWA install + push notifications (Firebase Cloud Messaging)         -->
+<!-- ------------------------------------------------------------------ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// TODO: paste your Firebase web config here (Firebase Console → Project
+// Settings → General → Your apps → Web app). Safe to be public.
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+// TODO: paste your Web Push "VAPID key" (Project Settings → Cloud Messaging
+// → Web configuration → Generate key pair).
+const VAPID_KEY = "YOUR_VAPID_KEY";
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch((err) =>
+    console.warn("Service worker registration failed:", err)
+  );
+}
+
+async function enableNotifications() {
+  const btn = document.getElementById("notifyBtn");
+  btn.disabled = true;
+  btn.textContent = "Requesting…";
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      btn.textContent = "🔕 Notifications blocked";
+      return;
+    }
+    const registration = await navigator.serviceWorker.ready;
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: registration,
+    });
+    if (token) {
+      await db.collection("subscribers").doc(token).set({
+        token,
+        subscribedAt: new Date().toISOString(),
+        platform: navigator.userAgent,
+      });
+      btn.textContent = "✅ You're subscribed";
+    } else {
+      btn.disabled = false;
+      btn.textContent = "🔔 Get daily alerts";
+    }
+  } catch (err) {
+    console.error("Notification setup failed:", err);
+    btn.disabled = false;
+    btn.textContent = "🔔 Get daily alerts";
+  }
+}
 </script>
 
 </body>
