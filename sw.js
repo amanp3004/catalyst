@@ -46,12 +46,13 @@ importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-com
 // Settings → General → Your apps → Web app). These values are safe to be
 // public — they identify the project, they are not secret credentials.
 firebase.initializeApp({
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyB63bgKMs5atlnWwkJP7ZnSPFwNLMVT0u4",
+  authDomain: "catalyst-5823f.firebaseapp.com",
+  projectId: "catalyst-5823f",
+  storageBucket: "catalyst-5823f.firebasestorage.app",
+  messagingSenderId: "993238629123",
+  appId: "1:993238629123:web:8f9b45f8de59a790600736",
+  measurementId: "G-XNB4KR8P77"
 });
 
 const messaging = firebase.messaging();
