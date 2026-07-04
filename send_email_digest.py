@@ -21,8 +21,21 @@ from email.mime.text import MIMEText
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS")
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
+def _clean_credential(value):
+    """Strip whitespace, including non-breaking spaces (U+00A0), which sneak
+    into GitHub secrets when an app password's display spacing ("abcd efgh
+    ijkl mnop") gets copy-pasted from certain browser contexts. Those spaces
+    are purely for display anyway — Google doesn't need them in the actual
+    credential — but a stray \\xa0 crashes smtplib's ASCII-based auth step
+    before it even reaches Gmail, so we strip all whitespace defensively.
+    """
+    if value is None:
+        return value
+    return "".join(value.split())
+
+
+GMAIL_ADDRESS = _clean_credential(os.environ.get("GMAIL_ADDRESS"))
+GMAIL_APP_PASSWORD = _clean_credential(os.environ.get("GMAIL_APP_PASSWORD"))
 SITE_URL = os.environ.get("SITE_URL", "https://amanp3004.github.io/catalyst/")
 BATCH_SIZE = 40  # recipients per BCC batch, keeps individual sends well under Gmail's limits
 
@@ -83,6 +96,7 @@ def build_html(edition):
   <tr><td style="padding:28px 30px 16px; border-bottom:3px solid #16261F;">
     <span style="font-family:Georgia,serif; font-weight:700; font-size:30px; color:#16261F;">Catalyst<span style="color:#B87A1E;">.</span></span>
     <div style="font-size:11px; color:#6B7268; margin-top:6px; letter-spacing:0.03em;">DAILY EDITION FOR BUILDERS</div>
+    <div style="font-size:12px; color:#6B7268; margin-top:8px;">Presented by Saksham &mdash; Entrepreneurship Club, IIM Udaipur &middot; Curated by Atlas, AI Editor</div>
   </td></tr>
 
   <tr><td style="padding:20px 30px; background:#2C4A3B;">
