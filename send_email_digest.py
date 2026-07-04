@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
     print(f"Sending to {len(recipients)} recipient(s) across all lists...")
     html_body = build_html(edition)
-    subject = f"Catalyst — {edition.get('theme', 'Today\u2019s Edition')}"
+    subject = f"Catalyst — {edition.get('theme', 'Today’s Edition')}"
 
     for i in range(0, len(recipients), BATCH_SIZE):
         batch = recipients[i:i + BATCH_SIZE]
