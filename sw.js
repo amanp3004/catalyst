@@ -46,7 +46,7 @@ importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-com
 // Settings → General → Your apps → Web app). These values are safe to be
 // public — they identify the project, they are not secret credentials.
 firebase.initializeApp({
-  apiKey: "AIzaSyB63bgKMs5atlnWwkJP7ZnSPFwNLMVT0u4",
+  apiKey: FIREBASE_API_KEY,
   authDomain: "catalyst-5823f.firebaseapp.com",
   projectId: "catalyst-5823f",
   storageBucket: "catalyst-5823f.firebasestorage.app",
