@@ -368,8 +368,16 @@ the exclusion lists above. Output only the JSON object."""
             "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
             "generationConfig": {
                 "temperature": 0.7,
-                "maxOutputTokens": 8192,
+                "maxOutputTokens": 16384,
                 "responseMimeType": "application/json",
+                # gemini-2.5-flash has extended "thinking" enabled by
+                # default, which draws from the same token budget as the
+                # visible output. With a bigger schema (5 sections) and a
+                # larger raw story pool to reason over, that reasoning was
+                # consuming enough of the 8192-token budget to truncate the
+                # JSON mid-string. Disabling it and raising the ceiling
+                # fixes both the truncation and gives real headroom.
+                "thinkingConfig": {"thinkingBudget": 0},
             },
         },
         timeout=60,
@@ -386,7 +394,13 @@ the exclusion lists above. Output only the JSON object."""
         print("---- RAW MODEL OUTPUT (failed to parse as JSON) ----")
         print(text)
         print("---- END RAW OUTPUT ----")
-        raise SystemExit(f"Gemini did not return valid JSON: {e}")
+        finish_reason = data.get("candidates", [{}])[0].get("finishReason", "unknown")
+        raise SystemExit(
+            f"Gemini did not return valid JSON: {e}. "
+            f"finishReason was '{finish_reason}' — if this is 'MAX_TOKENS', "
+            "raise maxOutputTokens further; if 'SAFETY' or 'RECITATION', "
+            "the prompt or source content triggered a content filter."
+        )
 
     edition["date"] = today
     return edition
