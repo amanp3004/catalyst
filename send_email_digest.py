@@ -21,6 +21,8 @@ from email.mime.text import MIMEText
 import firebase_admin
 from firebase_admin import credentials, firestore
 
+from edition_utils import load_todays_edition
+
 def _clean_credential(value):
     """Strip whitespace, including non-breaking spaces (U+00A0), which sneak
     into GitHub secrets when an app password's display spacing ("abcd efgh
@@ -37,7 +39,6 @@ def _clean_credential(value):
 GMAIL_ADDRESS = _clean_credential(os.environ.get("GMAIL_ADDRESS"))
 GMAIL_APP_PASSWORD = _clean_credential(os.environ.get("GMAIL_APP_PASSWORD"))
 SITE_URL = os.environ.get("SITE_URL", "https://amanp3004.github.io/catalyst/")
-BATCH_SIZE = 40  # recipients per BCC batch, keeps individual sends well under Gmail's limits
 
 if not GMAIL_ADDRESS or not GMAIL_APP_PASSWORD:
     raise SystemExit(
@@ -45,11 +46,6 @@ if not GMAIL_ADDRESS or not GMAIL_APP_PASSWORD:
         "Generate an App Password at https://myaccount.google.com/apppasswords "
         "(requires 2-Step Verification enabled on the Gmail account)."
     )
-
-
-def load_todays_edition():
-    with open("data/latest.json") as f:
-        return json.load(f)
 
 
 def get_all_recipients():
@@ -66,6 +62,52 @@ def get_all_recipients():
         for e in doc.to_dict().get("emails", []):
             emails.add(e.strip().lower())
     return sorted(emails)
+
+
+def build_text(edition):
+    """Plain-text alternative to the HTML email. Emails with an HTML part
+    but no text/plain part are a well-known spam-filter red flag — nearly
+    all legitimate mail includes both."""
+    theme = edition.get("theme", "")
+    brief = edition.get("brief", [])
+    bd = edition.get("breakdown", {})
+    trend = edition.get("trend", {}).get("paragraphs", [])
+    note = edition.get("editors_note", {}).get("paragraphs", [])
+
+    lines = [f"CATALYST — {theme}", "Daily Edition for Builders", ""]
+
+    lines.append("STARTUP BRIEF")
+    lines.append("-" * 40)
+    for item in brief:
+        lines.append(item.get("title", ""))
+        lines.append(item.get("summary", ""))
+        lines.append(item.get("url", ""))
+        lines.append("")
+
+    lines.append(f"STARTUP BREAKDOWN — {bd.get('company', '')}")
+    lines.append("-" * 40)
+    lines.append(f"What it does: {bd.get('what', '')}")
+    lines.append(f"Why it matters: {bd.get('why', '')}")
+    lines.append(f"Lesson: \"{bd.get('lesson', '')}\"")
+    lines.append("")
+
+    lines.append("TREND TO WATCH")
+    lines.append("-" * 40)
+    lines.extend(trend)
+    lines.append("")
+
+    lines.append("EDITOR'S NOTE")
+    lines.append("-" * 40)
+    lines.extend(note)
+    lines.append("")
+
+    lines.append(f"Read today's full edition: {SITE_URL}")
+    lines.append("")
+    lines.append("Curated by Atlas — Our AI Editor")
+    lines.append(
+        f"To stop receiving this, reply to this email or contact {GMAIL_ADDRESS}."
+    )
+    return "\n".join(lines)
 
 
 def build_html(edition):
@@ -139,22 +181,22 @@ def build_html(edition):
 """
 
 
-def send_batch(html_body, subject, bcc_list):
+def send_to_recipient(server, subject, text_body, html_body, recipient):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = GMAIL_ADDRESS
-    msg["To"] = GMAIL_ADDRESS  # send to self; real recipients passed as SMTP envelope recipients below
-    # Deliberately NOT setting msg["Bcc"] — doing so would embed the header
-    # (and the full recipient list) into the actual message body that gets
-    # delivered, which every recipient could see via "Show Original". BCC
-    # recipients belong only in sendmail()'s envelope list, never in the
-    # message itself.
+    msg["From"] = f"Catalyst <{GMAIL_ADDRESS}>"
+    msg["To"] = recipient
+    # RFC 8058 one-click unsubscribe header. Gmail's own bulk-sender
+    # guidelines expect this, and its presence (or absence) meaningfully
+    # affects spam scoring for anything sent to more than a couple of
+    # addresses on a recurring schedule.
+    msg["List-Unsubscribe"] = f"<mailto:{GMAIL_ADDRESS}?subject=unsubscribe>"
+    msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+    # Order matters in multipart/alternative: plain text first, richest
+    # version (html) last — clients render the last part they understand.
+    msg.attach(MIMEText(text_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
-
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
-        server.sendmail(GMAIL_ADDRESS, bcc_list, msg.as_string())
+    server.sendmail(GMAIL_ADDRESS, [recipient], msg.as_string())
 
 
 if __name__ == "__main__":
@@ -167,11 +209,14 @@ if __name__ == "__main__":
 
     print(f"Sending to {len(recipients)} recipient(s) across all lists...")
     html_body = build_html(edition)
+    text_body = build_text(edition)
     subject = f"Catalyst — {edition.get('theme', 'Today’s Edition')}"
 
-    for i in range(0, len(recipients), BATCH_SIZE):
-        batch = recipients[i:i + BATCH_SIZE]
-        send_batch(html_body, subject, batch)
-        print(f"Sent batch of {len(batch)} ({i + len(batch)}/{len(recipients)})")
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+        for i, recipient in enumerate(recipients, start=1):
+            send_to_recipient(server, subject, text_body, html_body, recipient)
+            print(f"Sent to {recipient} ({i}/{len(recipients)})")
 
     print("Done.")
