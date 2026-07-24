@@ -131,11 +131,22 @@ WORKFLOW:
    Beats Technology", "The Great Unbundling of Venture Capital"
    Weak/too plain: "AI Trends in Startups", "Changes in the Funding Market"
 3. Curate exactly five sections:
-   - startup_brief: 3 stories. Each needs a catchy, magazine-style title —
-     not a dry restatement of the headline. Titles should hook attention
-     while staying factually accurate (no clickbait exaggeration, no
-     fabricated claims). Think Economist/Fast Company headline energy, not
-     press-release energy.
+   - startup_brief: 5 stories total, split into two segments:
+       * FIRST 3 stories: "global" — any geography (US, Europe, Southeast
+         Asia, elsewhere), general startup/tech news, diverse sectors.
+       * LAST 2 stories: "india" — must specifically be about an Indian
+         startup, company, or India-specific policy/market development.
+         Prefer stories from the India-focused sources in the raw pool
+         (YourStory, Inc42, Entrackr, or India-tagged Google News items).
+         If the raw pool genuinely contains no usable India story that
+         day, still make a good-faith effort before falling back — India
+         coverage should not be dropped for convenience.
+     Every item needs a "region" field ("global" or "india") tagging which
+     segment it belongs to — do not rely on ordering alone. Each item also
+     needs a catchy, magazine-style title — not a dry restatement of the
+     headline. Titles should hook attention while staying factually
+     accurate (no clickbait exaggeration, no fabricated claims). Think
+     Economist/Fast Company headline energy, not press-release energy.
      Example — dry: "Company X raises $10M in funding round"
      Example — catchy: "Company X just proved bigger isn't better"
      Each item also needs a 1-2 sentence summary explaining why it matters
@@ -217,9 +228,11 @@ matching exactly this schema:
   "theme": "string",
   "theme_image_query": "2-4 word literal, photographable stock-photo search phrase for the theme (e.g. 'server room data center', 'city skyline finance')",
   "brief": [
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "image_query": "2-4 word literal, photographable stock-photo search phrase (e.g. 'startup office team', 'robot factory automation')"},
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "image_query": "string"},
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "image_query": "string"}
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "image_query": "2-4 word literal, photographable stock-photo search phrase (e.g. 'startup office team', 'robot factory automation')"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "image_query": "string"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "image_query": "string"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "india", "image_query": "string"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "india", "image_query": "string"}
   ],
   "breakdown": {
     "company": "string",
@@ -361,46 +374,68 @@ the exclusion lists above. Output only the JSON object."""
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={GEMINI_API_KEY}"
 
-    response = requests.post(
-        url,
-        json={
-            "system_instruction": {"parts": [{"text": MANIFESTO}]},
-            "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
-            "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 16384,
-                "responseMimeType": "application/json",
-                # gemini-2.5-flash has extended "thinking" enabled by
-                # default, which draws from the same token budget as the
-                # visible output. With a bigger schema (5 sections) and a
-                # larger raw story pool to reason over, that reasoning was
-                # consuming enough of the 8192-token budget to truncate the
-                # JSON mid-string. Disabling it and raising the ceiling
-                # fixes both the truncation and gives real headroom.
-                "thinkingConfig": {"thinkingBudget": 0},
+    max_attempts = 3
+    last_error_summary = None
+
+    for attempt in range(1, max_attempts + 1):
+        response = requests.post(
+            url,
+            json={
+                "system_instruction": {"parts": [{"text": MANIFESTO}]},
+                "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": 16384,
+                    "responseMimeType": "application/json",
+                    # gemini-2.5-flash has extended "thinking" enabled by
+                    # default, which draws from the same token budget as the
+                    # visible output. With a bigger schema (5 sections) and a
+                    # larger raw story pool to reason over, that reasoning was
+                    # consuming enough of the 8192-token budget to truncate the
+                    # JSON mid-string. Disabling it and raising the ceiling
+                    # fixes both the truncation and gives real headroom.
+                    "thinkingConfig": {"thinkingBudget": 0},
+                },
             },
-        },
-        timeout=60,
-    )
-    response.raise_for_status()
-    data = response.json()
-
-    text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    text = re.sub(r"^```(json)?|```$", "", text, flags=re.MULTILINE).strip()
-
-    try:
-        edition = json.loads(text)
-    except json.JSONDecodeError as e:
-        print("---- RAW MODEL OUTPUT (failed to parse as JSON) ----")
-        print(text)
-        print("---- END RAW OUTPUT ----")
-        finish_reason = data.get("candidates", [{}])[0].get("finishReason", "unknown")
-        raise SystemExit(
-            f"Gemini did not return valid JSON: {e}. "
-            f"finishReason was '{finish_reason}' — if this is 'MAX_TOKENS', "
-            "raise maxOutputTokens further; if 'SAFETY' or 'RECITATION', "
-            "the prompt or source content triggered a content filter."
+            timeout=60,
         )
+        response.raise_for_status()
+        data = response.json()
+
+        text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        text = re.sub(r"^```(json)?|```$", "", text, flags=re.MULTILINE).strip()
+
+        try:
+            edition = json.loads(text)
+        except json.JSONDecodeError as e:
+            # Even with responseMimeType: "application/json", Gemini's JSON
+            # mode biases toward valid JSON but doesn't guarantee it on every
+            # single generation — a dropped comma or similar slip is a
+            # transient, probabilistic failure, not a deterministic bug. The
+            # same mistake essentially never repeats on a retry, so retrying
+            # the whole call is the correct fix here, not more prompt
+            # engineering (which can't guarantee syntactic correctness from
+            # a non-deterministic model anyway).
+            finish_reason = data.get("candidates", [{}])[0].get("finishReason", "unknown")
+            last_error_summary = f"{e}. finishReason was '{finish_reason}'"
+            print(
+                f"[warn] attempt {attempt}/{max_attempts}: Gemini returned "
+                f"malformed JSON ({last_error_summary}). "
+                + ("Retrying..." if attempt < max_attempts else "Out of retries.")
+            )
+            if attempt < max_attempts:
+                continue
+            print("---- RAW MODEL OUTPUT (failed to parse as JSON, final attempt) ----")
+            print(text)
+            print("---- END RAW OUTPUT ----")
+            raise SystemExit(
+                f"Gemini did not return valid JSON after {max_attempts} attempts: "
+                f"{last_error_summary}. If finishReason is 'MAX_TOKENS', raise "
+                "maxOutputTokens further; if 'SAFETY' or 'RECITATION', the "
+                "prompt or source content triggered a content filter."
+            )
+        else:
+            break  # success
 
     edition["date"] = today
     return edition
