@@ -23,14 +23,14 @@
   body{background:var(--paper); color:var(--ink); font-family:'Space Grotesk', sans-serif; line-height:1.5; padding-bottom:80px;}
   a{color:inherit;}
   .masthead{border-bottom:3px solid var(--ink); padding:22px 24px 16px; max-width:900px; margin:0 auto;}
-  .masthead-top{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;}
-  .masthead-right{display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
-  .partner-logos{display:flex; align-items:center; gap:12px;}
+  .masthead-top{display:flex; justify-content:space-between; align-items:center; flex-wrap:nowrap; gap:10px;}
+  .partner-logos{display:flex; align-items:center; gap:12px; flex-shrink:0;}
   .partner-logos img{height:28px; width:auto; display:block; object-fit:contain;}
+  .masthead-sub{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:6px; margin-top:8px;}
   .brand{font-family:'Fraunces', serif; font-weight:700; font-size:38px; letter-spacing:-0.5px;}
   .brand .mark{color:var(--signal-deep);}
   .meta{font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); text-align:right;}
-  .tagline{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted); margin-top:6px;}
+  .tagline{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--muted);}
   .theme-banner{max-width:900px; margin:0 auto; padding:20px 24px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--line);}
   .theme-cover{max-width:900px; margin:0 auto; padding:0 24px;}
   .theme-cover img{width:100%; height:220px; object-fit:cover; border-radius:12px; display:block; margin-top:20px;}
@@ -83,7 +83,7 @@
   .notify-btn{font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; background:var(--forest); color:var(--paper); border:none; padding:8px 14px; border-radius:20px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
   .notify-btn:hover{background:var(--signal-deep);}
   .notify-btn[disabled]{opacity:0.6; cursor:default;}
-  @media (max-width:600px){ .brand{font-size:28px;} .masthead-top{flex-direction:column; align-items:flex-start;} .masthead-right{align-items:flex-start; width:100%;} .meta{text-align:left;} .partner-logos img{height:22px;} }
+  @media (max-width:600px){ .brand{font-size:24px;} .masthead-sub{flex-direction:column; align-items:flex-start; gap:2px;} .meta{text-align:left;} .partner-logos{gap:8px;} .partner-logos img{height:20px;} }
 </style>
 </head>
 <body>
@@ -91,15 +91,15 @@
   <div class="masthead">
     <div class="masthead-top">
       <div class="brand">Catalyst<span class="mark">.</span></div>
-      <div class="masthead-right">
-        <div class="partner-logos">
-          <img src="icons/partners/iimu.png" alt="IIM Udaipur" height="28">
-          <img src="icons/partners/saksham.png" alt="Saksham — The Entrepreneurship Cell of IIM Udaipur" height="28">
-        </div>
-        <div class="meta" id="dateMeta">Daily Edition</div>
+      <div class="partner-logos">
+        <img src="icons/partners/iimu.png" alt="IIM Udaipur" height="28">
+        <img src="icons/partners/saksham.png" alt="Saksham — The Entrepreneurship Cell of IIM Udaipur" height="28">
       </div>
     </div>
-    <div class="tagline">Presented by Saksham — Entrepreneurship Club, IIM Udaipur · Curated by Atlas, AI Editor</div>
+    <div class="masthead-sub">
+      <div class="tagline">Presented by Saksham — Entrepreneurship Club, IIM Udaipur · Curated by Atlas, AI Editor</div>
+      <div class="meta" id="dateMeta">Daily Edition</div>
+    </div>
   </div>
 
   <div class="notify-bar">
