@@ -142,7 +142,18 @@ WORKFLOW:
          day, still make a good-faith effort before falling back — India
          coverage should not be dropped for convenience.
      Every item needs a "region" field ("global" or "india") tagging which
-     segment it belongs to — do not rely on ordering alone. Each item also
+     segment it belongs to — do not rely on ordering alone. Every item ALSO
+     needs a "sector" field: "ai" if the story's core subject is AI/ML
+     technology itself, "non_ai" otherwise (a non-AI company that merely
+     mentions using AI internally still counts as "non_ai" — the test is
+     whether AI *is the story*, not whether AI is mentioned anywhere).
+     HARD REQUIREMENT: at least 2 of the 5 items must be "non_ai", UNLESS
+     you have actually checked the full raw story pool below and confirmed
+     fewer than 2 genuine non-AI options exist that day — do not skip this
+     check just because AI stories are more numerous or easier to write
+     about; actively scan for fintech, healthtech, consumer, D2C, B2B SaaS,
+     hardware, biotech, edtech, gaming, logistics, spacetech, and agritech
+     stories in the raw pool before concluding none exist. Each item also
      needs a catchy, magazine-style title — not a dry restatement of the
      headline. Titles should hook attention while staying factually
      accurate (no clickbait exaggeration, no fabricated claims). Think
@@ -228,11 +239,11 @@ matching exactly this schema:
   "theme": "string",
   "theme_image_query": "2-4 word literal, photographable stock-photo search phrase for the theme (e.g. 'server room data center', 'city skyline finance')",
   "brief": [
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "image_query": "2-4 word literal, photographable stock-photo search phrase (e.g. 'startup office team', 'robot factory automation')"},
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "image_query": "string"},
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "image_query": "string"},
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "india", "image_query": "string"},
-    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "india", "image_query": "string"}
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "sector": "ai or non_ai", "image_query": "2-4 word literal, photographable stock-photo search phrase (e.g. 'startup office team', 'robot factory automation')"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "sector": "ai or non_ai", "image_query": "string"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "global", "sector": "ai or non_ai", "image_query": "string"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "india", "sector": "ai or non_ai", "image_query": "string"},
+    {"title": "string", "summary": "string", "url": "string", "domain": "string", "region": "india", "sector": "ai or non_ai", "image_query": "string"}
   ],
   "breakdown": {
     "company": "string",
@@ -257,6 +268,17 @@ matching exactly this schema:
 # ---------------------------------------------------------------------------
 # 2. COLLECT NEWS
 # ---------------------------------------------------------------------------
+
+# Used to detect whether a past theme was AI-primary, so we can compute a
+# hard, evidence-based directive instead of relying on a standing prompt
+# instruction alone (which the model has been observed to ignore after
+# enough consecutive days — see load_recent_history).
+AI_THEME_PATTERN = re.compile(
+    r"\b(ai|a\.i\.|artificial intelligence|agentic|llm|large language model|"
+    r"genai|generative ai|gpt|machine learning|neural network|chatbot)\b",
+    re.IGNORECASE,
+)
+
 
 def load_recent_history(lookback_days=35):
     """Scan data/*.json for the last `lookback_days` (by IST date) and pull
@@ -306,6 +328,43 @@ def load_recent_history(lookback_days=35):
     return recent_companies, recent_terms, recent_themes
 
 
+def ai_theme_streak_directive(recent_themes, window=5, threshold=3):
+    """Build a forceful, evidence-cited directive when recent themes have
+    been AI-heavy. Returns "" if there's nothing to flag.
+
+    This exists because the standing manifesto instruction to diversify
+    away from AI was, in practice, ignored for weeks straight (observed:
+    every theme from a 15-day span was AI-related despite the instruction
+    being present the whole time). A concrete, evidence-based, dynamically
+    computed directive — citing the actual recent themes and a count — is
+    far harder for the model to rationalize past than an abstract standing
+    principle repeated identically every single day.
+    """
+    last_n = recent_themes[-window:]
+    if not last_n:
+        return ""
+
+    ai_count = sum(1 for t in last_n if AI_THEME_PATTERN.search(t))
+    if ai_count < threshold:
+        return ""
+
+    listed = "\n".join(f'  - "{t}"' for t in last_n)
+    return f"""
+STRICT REQUIREMENT — AI THEME OVERUSE DETECTED:
+{ai_count} of your last {len(last_n)} themes were primarily about AI:
+{listed}
+
+Today's theme MUST NOT be primarily about AI. Before defaulting to AI
+anyway, you are required to actively scan the full raw story pool below
+for a viable non-AI theme (fintech, healthtech, consumer/D2C, B2B SaaS,
+hardware, biotech, edtech, gaming, logistics, spacetech, climate/cleantech,
+agritech, manufacturing, or any other genuine sector angle). Only pick an
+AI theme again if, after that active search, the raw pool truly contains
+no usable non-AI throughline — and if so, treat that as a rare exception,
+not the default outcome.
+"""
+
+
 def collect_stories(limit_per_source=12):
     """Pull recent items from RSS feeds + Hacker News. Returns a flat list."""
     stories = []
@@ -350,21 +409,32 @@ def curate_edition(stories, today):
     )
 
     recent_companies, recent_terms, recent_themes = load_recent_history()
+    ai_directive = ai_theme_streak_directive(recent_themes)
 
-    history_block = f"""
+    # Terms rejected mid-run because the model picked one anyway despite the
+    # exclusion list — appended to the prompt on retry so the same collision
+    # can't repeat within this run. This is what actually enforces the
+    # "RECENTLY USED TERMS" rule, rather than trusting the model to obey it
+    # unaided (observed in practice to fail: "Zero-Day Exploit" repeated
+    # after only 4 days, well inside the 35-day exclusion window).
+    rejected_this_run = []
+
+    def build_prompt():
+        all_excluded_terms = recent_terms + rejected_this_run
+        history_block = f"""
 RECENTLY FEATURED COMPANIES (Startup Breakdown, last ~35 days — do not repeat):
 {", ".join(recent_companies) if recent_companies else "(none yet)"}
 
 RECENTLY USED TERMS (Builder's Lexicon, last ~35 days — do not repeat):
-{", ".join(recent_terms) if recent_terms else "(none yet)"}
+{", ".join(all_excluded_terms) if all_excluded_terms else "(none yet)"}
 
 RECENT THEMES (last ~35 days, for context on what's already been covered —
 use to help judge whether today would be piling onto an already-frequent
 topic like AI, not as a hard exclusion list):
 {", ".join(recent_themes) if recent_themes else "(none yet)"}
-"""
+{ai_directive}"""
 
-    user_prompt = f"""Today's date: {today}
+        return f"""Today's date: {today}
 
 RAW STORIES COLLECTED TODAY:
 {raw_dump}
@@ -374,10 +444,11 @@ the exclusion lists above. Output only the JSON object."""
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={GEMINI_API_KEY}"
 
-    max_attempts = 3
+    max_attempts = 4
     last_error_summary = None
 
     for attempt in range(1, max_attempts + 1):
+        user_prompt = build_prompt()
         response = requests.post(
             url,
             json={
@@ -434,8 +505,28 @@ the exclusion lists above. Output only the JSON object."""
                 "maxOutputTokens further; if 'SAFETY' or 'RECITATION', the "
                 "prompt or source content triggered a content filter."
             )
-        else:
-            break  # success
+
+        # Code-level enforcement of the lexicon exclusion list. The prompt
+        # instruction alone was observed to be insufficient (see comment
+        # above rejected_this_run) — this is what actually guarantees it.
+        picked_term = edition.get("builder_lexicon", {}).get("term", "").strip()
+        already_used = {t.lower() for t in (recent_terms + rejected_this_run)}
+        if picked_term and picked_term.lower() in already_used:
+            print(
+                f"[warn] attempt {attempt}/{max_attempts}: Builder's Lexicon "
+                f"term '{picked_term}' collides with the exclusion list. "
+                + ("Retrying with it explicitly excluded..." if attempt < max_attempts
+                   else "Out of retries — keeping it this once rather than "
+                        "failing the whole edition over a soft repeat.")
+            )
+            if attempt < max_attempts:
+                rejected_this_run.append(picked_term)
+                continue
+            # Final attempt: accept the repeat rather than block the entire
+            # day's edition over a non-critical issue. Logged loudly above
+            # so it's visible in the Actions run if it happens.
+
+        break  # success (or accepted final-attempt fallback above)
 
     edition["date"] = today
     return edition
