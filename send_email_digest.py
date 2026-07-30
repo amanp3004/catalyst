@@ -71,7 +71,7 @@ def build_text(edition):
     theme = edition.get("theme", "")
     brief = edition.get("brief", [])
     bd = edition.get("breakdown", {})
-    trend = edition.get("trend", {}).get("paragraphs", [])
+    trend_cards = edition.get("trend_cards", [])
     note = edition.get("editors_note", {}).get("paragraphs", [])
 
     lines = [f"CATALYST — {theme}", "Daily Edition for Builders", ""]
@@ -93,8 +93,10 @@ def build_text(edition):
 
     lines.append("TREND TO WATCH")
     lines.append("-" * 40)
-    lines.extend(trend)
-    lines.append("")
+    for card in trend_cards:
+        lines.append(f"• {card.get('headline', '')}")
+        lines.append(f"  {card.get('insight', '')}")
+        lines.append("")
 
     lines.append("EDITOR'S NOTE")
     lines.append("-" * 40)
@@ -114,7 +116,7 @@ def build_html(edition):
     theme = edition.get("theme", "")
     brief = edition.get("brief", [])
     bd = edition.get("breakdown", {})
-    trend = edition.get("trend", {}).get("paragraphs", [])
+    trend_cards = edition.get("trend_cards", [])
     note = edition.get("editors_note", {}).get("paragraphs", [])
 
     brief_html = "".join(f"""
@@ -125,7 +127,14 @@ def build_html(edition):
       </td></tr>
     """ for item in brief)
 
-    trend_html = "".join(f'<p style="font-size:14px; color:#333; line-height:1.6; margin-bottom:12px;">{p}</p>' for p in trend)
+    trend_html = "".join(f"""
+      <tr><td style="padding:0 0 16px;">
+        {f'<img src="{card["image"]}" alt="{card.get("headline","")}" width="100%" style="display:block; width:100%; max-height:160px; object-fit:cover; border-radius:6px; margin-bottom:8px;">' if card.get('image') else ''}
+        <div style="font-family:Georgia,serif; font-weight:700; font-size:15px; color:#16261F; margin-bottom:4px;">{card.get('headline','')}</div>
+        <div style="font-size:13.5px; color:#333; line-height:1.55;">{card.get('insight','')}</div>
+      </td></tr>
+    """ for card in trend_cards)
+
     note_html = "".join(f'<p style="font-size:14px; color:#F6F3EC; line-height:1.6; margin-bottom:12px;">{p}</p>' for p in note)
 
     return f"""
@@ -160,7 +169,7 @@ def build_html(edition):
 
   <tr><td style="padding:0 30px 20px;">
     <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#B87A1E; margin-bottom:10px;">Trend to Watch</div>
-    {trend_html}
+    <table width="100%" cellpadding="0" cellspacing="0">{trend_html}</table>
   </td></tr>
 
   <tr><td style="padding:24px 30px; background:#2C4A3B;">
