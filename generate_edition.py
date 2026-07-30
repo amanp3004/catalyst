@@ -170,8 +170,27 @@ WORKFLOW:
      Startup Breakdown in roughly the last 35 days) — treat it as a hard
      exclusion list. Do not pick any company on it, even if it's genuinely
      the best fit for today's theme; pick the next-best company instead.
-   - trend_to_watch: 2-3 short paragraphs explaining the broader shift, no
-     jargon, focused on strategic implications for founders.
+   - trend_cards: 6-7 independent "insight cards" exploring the broader
+     shift behind today's theme — this replaces a single flowing narrative,
+     so EACH card must stand completely on its own (a reader could see just
+     one card, out of order, and still get a complete, specific insight).
+     Do NOT split one continuous argument across cards like paragraph
+     1/2/3 of an essay — that produces cards that feel incomplete alone.
+     Each card needs a short punchy headline (≤ 8 words, like a mini
+     magazine pull-quote, not a section label) and one genuinely insightful
+     note (2-3 sentences, ~40-60 words). "Insightful" specifically means:
+     name a specific company, number, mechanism, or contrast whenever
+     possible; surface a non-obvious angle or tension rather than a
+     restatement of the theme; avoid generic filler like "companies are
+     increasingly focusing on X" or "this represents a significant shift"
+     with nothing concrete backing it. Vary the ANGLE across the 6-7 cards
+     — mix things like: a specific data point or number from today's
+     stories, a contrarian or lesser-noticed angle, a historical parallel
+     or precedent, a concrete implication for a founder's next decision, a
+     regional or market-specific nuance (e.g. how this plays out in India
+     vs. globally), a risk or failure mode nobody's discussing, and a
+     "who benefits / who loses" angle — do not make all 6-7 cards the same
+     shape of observation. Each card also needs its own image_query.
    - builder_lexicon: exactly ONE core business/management concept that
      best complements today's theme, chosen AFTER the theme is set (e.g. a
      fundraising-themed edition → "SAFE Note", a growth-themed edition →
@@ -253,7 +272,14 @@ matching exactly this schema:
     "why": "string",
     "lesson": "string"
   },
-  "trend": {"paragraphs": ["string", "string"]},
+  "trend_cards": [
+    {"headline": "string, \u2264 8 words, punchy", "insight": "string, 2-3 sentences, specific and non-obvious", "image_query": "string"},
+    {"headline": "string", "insight": "string", "image_query": "string"},
+    {"headline": "string", "insight": "string", "image_query": "string"},
+    {"headline": "string", "insight": "string", "image_query": "string"},
+    {"headline": "string", "insight": "string", "image_query": "string"},
+    {"headline": "string", "insight": "string", "image_query": "string"}
+  ],
   "builder_lexicon": {
     "term": "string",
     "definition": "string (1-2 sentences only, ~25-40 words)",
@@ -590,6 +616,9 @@ def enrich_with_images(edition):
     for item in edition.get("brief", []):
         time.sleep(0.3)  # gentle pacing; well within Pexels' 200 req/hour limit
         item["image"] = search_pexels(item.get("image_query"))
+    for card in edition.get("trend_cards", []):
+        time.sleep(0.3)
+        card["image"] = search_pexels(card.get("image_query"))
     return edition
 
 
