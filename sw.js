@@ -1,7 +1,10 @@
 // Catalyst service worker
 // Handles: (1) basic offline caching of the app shell, (2) push notifications via Firebase Cloud Messaging.
 
-const CACHE_NAME = "catalyst-shell-v1";
+// Bumped v1 -> v2 so returning visitors' browsers detect this file changed
+// (byte-for-byte comparison), install this new worker, and the activate
+// handler below purges the old v1 cache that was serving stale index.html.
+const CACHE_NAME = "catalyst-shell-v2";
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -30,8 +33,22 @@ self.addEventListener("fetch", (event) => {
   // Never cache the data JSON — it must always be fresh.
   if (event.request.url.includes("/data/")) return;
 
+  // Network-first, falling back to cache only when offline. This is the
+  // opposite of the previous cache-first strategy, which was the actual
+  // cause of "always need to hard refresh" — a cache-first shell serves
+  // whatever was cached on first install forever, regardless of how many
+  // times the real index.html on the server changes afterward. Network-
+  // first means every visit checks the server first (near-instant on a
+  // normal connection), and only falls back to the cached copy if the
+  // network request genuinely fails (e.g. offline).
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
 
