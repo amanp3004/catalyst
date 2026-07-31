@@ -63,17 +63,22 @@
   .bd-block h4{font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--signal-deep); margin-bottom:6px;}
   .bd-block p{font-size:14.5px;}
   .lesson-box{background:#FBF3E2; border-left:3px solid var(--signal); padding:12px 16px; border-radius:4px; font-family:'Fraunces', serif; font-style:italic; font-size:15px;}
-  .trend-carousel-wrap{position:relative; overflow:hidden; border-radius:12px; height:380px; border:1px solid var(--line);}
-  .trend-carousel{display:flex; height:100%; touch-action:pan-y; transition:transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);}
-  .trend-card-slide{flex:0 0 100%; height:100%; box-sizing:border-box; padding:0 1px;}
-  .trend-card-inner{background:var(--card); height:100%; display:flex; flex-direction:column; user-select:none;}
-  .trend-card-img{width:100%; height:190px; object-fit:cover; display:block; background:#F0EDE3; flex-shrink:0; pointer-events:none;}
-  .trend-card-body{padding:18px 22px; flex:1; display:flex; flex-direction:column; gap:8px; overflow:hidden;}
-  .trend-card-headline{font-family:'Fraunces', serif; font-weight:700; font-size:18px; line-height:1.3;}
-  .trend-card-insight{font-size:14px; color:#333; line-height:1.55; display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden;}
+  .trend-carousel-wrap{position:relative; overflow:hidden; border-radius:12px; border:1px solid var(--line); transition:height 0.35s ease;}
+  .trend-carousel{display:flex; align-items:flex-start; touch-action:pan-y; transition:transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);}
+  .trend-card-slide{flex:0 0 100%; box-sizing:border-box; padding:0 1px;}
+  .trend-card-inner{background:var(--card); display:flex; flex-direction:column; user-select:none;}
+  .trend-card-img{width:100%; height:150px; object-fit:cover; display:block; background:#F0EDE3; flex-shrink:0; pointer-events:none;}
+  .trend-card-body{padding:16px 20px; display:flex; flex-direction:column; gap:6px;}
+  .trend-card-headline{font-family:'Fraunces', serif; font-weight:700; font-size:16px; line-height:1.3;}
+  .trend-card-insight{font-size:13px; color:#333; line-height:1.5;}
   .trend-dots{display:flex; justify-content:center; gap:6px; margin-top:14px;}
   .trend-dot{width:7px; height:7px; border-radius:50%; background:var(--line); cursor:pointer; transition:background .2s, width .2s;}
   .trend-dot.active{background:var(--signal-deep); width:20px; border-radius:4px;}
+  .trend-arrow{position:absolute; top:50%; transform:translateY(-50%); background:rgba(22,38,31,0.55); border:none; color:var(--paper); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2; transition:background .2s; padding:0;}
+  .trend-arrow:hover{background:rgba(22,38,31,0.85);}
+  .trend-arrow svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.5;}
+  .trend-arrow-left{left:10px;}
+  .trend-arrow-right{right:10px;}
   .lexicon-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:24px;}
   .lexicon-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:18px; padding-bottom:16px; border-bottom:1px dashed var(--line);}
   .lexicon-term{font-family:'Fraunces', serif; font-weight:700; font-size:22px;}
@@ -90,7 +95,7 @@
   .notify-btn{font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; background:var(--forest); color:var(--paper); border:none; padding:8px 14px; border-radius:20px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
   .notify-btn:hover{background:var(--signal-deep);}
   .notify-btn[disabled]{opacity:0.6; cursor:default;}
-  @media (max-width:600px){ .brand{font-size:24px;} .masthead-sub{flex-direction:column; align-items:flex-start; gap:2px;} .meta{text-align:left;} .partner-logos{gap:8px;} .partner-logos img{height:20px;} .trend-carousel-wrap{height:420px;} .trend-card-img{height:160px;} }
+  @media (max-width:600px){ .brand{font-size:24px;} .masthead-sub{flex-direction:column; align-items:flex-start; gap:2px;} .meta{text-align:left;} .partner-logos{gap:8px;} .partner-logos img{height:20px;} .trend-card-img{height:160px;} }
 </style>
 </head>
 <body>
@@ -173,6 +178,21 @@ function updateTrendTransform() {
   document.querySelectorAll('#trendDots .trend-dot').forEach((d, i) => {
     d.classList.toggle('active', i === trendIndex);
   });
+  syncTrendHeight();
+}
+
+function syncTrendHeight() {
+  const wrap = document.getElementById('trendCarouselWrap');
+  const slides = document.querySelectorAll('#trendCarousel .trend-card-slide');
+  const active = slides[trendIndex];
+  if (wrap && active) {
+    wrap.style.height = active.offsetHeight + 'px';
+  }
+}
+
+function trendArrowClick(delta) {
+  goToTrendSlide(trendIndex + delta);
+  startTrendAutoplay(); // manual nav still resumes normal rotation after
 }
 
 function goToTrendSlide(i) {
@@ -203,6 +223,8 @@ function initTrendCarousel(cards) {
   updateTrendTransform();
   startTrendAutoplay();
 }
+
+window.addEventListener('resize', () => syncTrendHeight());
 
 // Pointer handling attached once (not re-attached per render) so it keeps
 // working across content refreshes. Covers both mouse and touch since
@@ -298,6 +320,12 @@ function render(edition) {
   const trendHtml = `
     <div class="trend-carousel-wrap" id="trendCarouselWrap">
       <div class="trend-carousel" id="trendCarousel">${trendSlidesHtml}</div>
+      <button type="button" class="trend-arrow trend-arrow-left" onclick="trendArrowClick(-1)" aria-label="Previous insight">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button type="button" class="trend-arrow trend-arrow-right" onclick="trendArrowClick(1)" aria-label="Next insight">
+        <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
     </div>
     <div class="trend-dots" id="trendDots">${trendDotsHtml}</div>
   `;
