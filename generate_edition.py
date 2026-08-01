@@ -197,28 +197,198 @@ WORKFLOW:
      "North Star Metric", an org-design story → "Span of Control"). Do NOT
      limit this to startup/VC jargon — draw from across ALL of these
      functions, rotating which function gets featured rather than
-     defaulting to fundraising/growth terms every time:
-       Startup/VC/Product: MVP, Pivot, Product-Market Fit, CAC, LTV, Burn
-         Rate, Runway, Churn, ARR, MRR, TAM, SAM, SOM, GTM, Flywheel,
-         Network Effects, North Star Metric, Moat, Freemium, Blitzscaling,
-         ESOP, SAFE Note, Convertible Note, Cap Table, Seed Round, Series
-         A, Unicorn, Decacorn
-       Strategy: Porter's Five Forces, SWOT Analysis, Blue Ocean Strategy,
-         OKRs, Vertical Integration, Economies of Scale, First-Mover
-         Advantage, Switching Costs, Competitive Advantage
-       Marketing: Sales Funnel, Conversion Rate, Brand Equity, Market
-         Positioning, Market Segmentation, Growth Hacking, Net Promoter
-         Score (NPS), A/B Testing, Customer Retention, Performance
-         Marketing
-       Operations: Supply Chain, Just-In-Time Inventory, Lean
-         Manufacturing, Six Sigma, Bottleneck, Service-Level Agreement
-         (SLA), Vendor Management, Inventory Turnover
-       HR/People: Employee Engagement, Attrition Rate, Talent Acquisition,
-         Org Structure, Span of Control, Performance Management,
-         Onboarding, 360-Degree Feedback
-       Finance: Working Capital, EBITDA, Gross Margin, ROI, Break-Even
-         Point, Valuation, Dilution, Vesting, Liquidation Preference,
-         Pre-Money/Post-Money Valuation, P&L (Profit & Loss), Balance Sheet
+     defaulting to fundraising/growth terms every time. As with the M&A
+     category, use the reference definition below as accuracy ground truth
+     for each term, but rewrite it in Catalyst's own voice rather than
+     copying it verbatim, and still add your own "why it matters" and
+     real-world example as usual:
+       Startup/VC/Product: MVP (the smallest version of a product that
+         tests a core hypothesis with real users); Pivot (changing a
+         startup's core strategy or product while keeping the underlying
+         vision); Product-Market Fit (the point where a product satisfies
+         strong market demand, shown by organic growth and retention); CAC
+         (the total sales and marketing cost to acquire one paying
+         customer); LTV (the total revenue a business expects from a
+         customer over the full relationship); Burn Rate (the rate at
+         which a company spends cash reserves before turning cash-flow
+         positive); Runway (how many months a company can operate before
+         running out of cash at its current burn rate); Churn (the rate at
+         which customers stop using a product or cancel a subscription);
+         ARR (predictable yearly revenue from subscriptions, normalized to
+         12 months); MRR (predictable monthly recurring subscription
+         revenue); TAM (the total revenue opportunity if a product
+         captured 100% of its market); SAM (the portion of TAM realistically
+         reachable given the business model); SOM (the portion of SAM
+         realistically capturable in the near term); GTM Strategy (the plan
+         for how a company will reach and convert customers at launch);
+         Flywheel (a self-reinforcing loop where growth in one area
+         accelerates growth in another); Network Effects (a product gets
+         more valuable to each user as more people use it); North Star
+         Metric (the single metric a company believes best captures the
+         core value it delivers); Moat (a durable competitive advantage
+         that protects a business from competitors); Freemium (a free
+         basic tier drives adoption, with paid upgrades for premium
+         features); Blitzscaling (prioritizing growth speed over
+         efficiency, accepting risk to win a market fast); ESOP (a program
+         granting employees equity ownership in the company); SAFE Note (an
+         early-stage instrument that converts to equity at a future priced
+         round); Convertible Note (short-term debt that converts to equity
+         at a future financing round); Cap Table (a ledger detailing a
+         startup's ownership structure); Seed Round (the first major
+         external round, typically used to reach product-market fit);
+         Series A (the first major VC round after seed, used to scale a
+         proven model); Vesting Cliff (a waiting period, often 1 year,
+         before any granted equity begins vesting); Pro-Rata Rights (an
+         investor's right to maintain their ownership % in future rounds);
+         Term Sheet (a non-binding document outlining proposed investment
+         terms); Due Diligence (the investigation investors run to verify a
+         company's claims before investing); Lead Investor (the investor
+         who sets a round's terms and writes the largest check); Accelerator
+         (a fixed-term program offering funding, mentorship, and resources
+         to early-stage startups); Angel Investor (a wealthy individual
+         investing personal capital in early-stage startups); Secondary
+         Sale (existing shareholders sell shares to new investors, with no
+         new capital raised by the company); Direct Listing (going public
+         by listing existing shares directly, skipping a traditional IPO
+         underwriting process)
+       Strategy: Porter's Five Forces (a framework analyzing industry
+         competitiveness via rivalry, new entrants, suppliers, buyers, and
+         substitutes); SWOT Analysis (evaluating a company's Strengths,
+         Weaknesses, Opportunities, and Threats); Blue Ocean Strategy
+         (creating uncontested market space instead of competing in a
+         crowded existing one); OKRs (a goal-setting framework pairing
+         qualitative objectives with measurable key results); Vertical
+         Integration (acquiring or building a business within your own
+         supply chain); Economies of Scale (the cost advantage gained as
+         production volume increases, lowering per-unit cost); First-Mover
+         Advantage (the competitive edge gained from being first into a
+         market); Switching Costs (the cost or effort a customer incurs
+         changing from one provider to another); Competitive Advantage (an
+         attribute that lets a company consistently outperform rivals);
+         Core Competency (a unique capability that's hard for competitors
+         to replicate); Value Chain Analysis (examining each business
+         activity to see where value is created and cost incurred);
+         Disruptive Innovation (a simpler, cheaper innovation that
+         eventually displaces established competitors); Business Model
+         Canvas (a one-page template mapping value proposition, customers,
+         and revenue model); Cost Leadership Strategy (competing by being
+         the lowest-cost producer in an industry); Differentiation
+         Strategy (competing by offering unique value that justifies a
+         premium price); Barriers to Entry (obstacles that make it hard for
+         new competitors to enter a market); Strategic Alliance (a formal
+         partnership between two companies pursuing shared objectives);
+         Co-opetition (companies cooperating and competing with each other
+         at the same time); BCG Matrix (a portfolio framework classifying
+         business units as stars, cash cows, question marks, or dogs);
+         Platform Strategy (building a business around enabling
+         interactions between two or more customer groups)
+       Marketing: Sales Funnel (the stages a prospective customer moves
+         through from awareness to purchase); Conversion Rate (the % of
+         users who take a desired action out of total visitors/leads);
+         Brand Equity (the commercial value a brand name adds beyond the
+         product's functional attributes); Market Positioning (how a brand
+         is perceived relative to competitors in customers' minds); Market
+         Segmentation (dividing a broad market into groups with similar
+         needs); Growth Hacking (rapid, low-cost experimentation across
+         marketing and product to drive growth); Net Promoter Score
+         (measuring customer loyalty via likelihood to recommend); A/B
+         Testing (comparing two versions of something to see which
+         performs better); Customer Retention (a company's ability to keep
+         customers over time); Performance Marketing (marketing where
+         spend is tied directly to measurable actions like clicks or
+         sales); Attribution Model (a framework for assigning credit for a
+         conversion across marketing touchpoints); Cohort Analysis
+         (analyzing behavior of user groups sharing a common start point
+         over time); Viral Coefficient (the number of new users each
+         existing user brings in, on average); Product-Led Growth (a
+         go-to-market motion where the product itself drives acquisition
+         and expansion); Marketing Qualified Lead (a lead who's engaged
+         with marketing but isn't sales-ready yet); Sales Qualified Lead (a
+         lead vetted and deemed ready for direct sales follow-up); Share of
+         Voice (a brand's visibility in its market relative to
+         competitors); Customer Journey Mapping (visualizing every
+         touchpoint a customer has with a brand from discovery to
+         purchase)
+       Operations: Supply Chain (the network of organizations and processes
+         that produce and deliver a product); Just-In-Time Inventory
+         (materials arrive only as needed, minimizing holding costs); Lean
+         Manufacturing (a production approach focused on eliminating waste
+         while maximizing value); Six Sigma (a data-driven methodology
+         aimed at reducing defects and process variation); Bottleneck (the
+         stage in a process that limits the system's overall throughput);
+         Service-Level Agreement (a contract defining the expected level
+         of service between provider and customer); Vendor Management
+         (managing supplier relationships to control cost, quality, and
+         risk); Inventory Turnover (how many times a company sells and
+         replaces its inventory in a period); Kanban (a visual workflow
+         method using cards to represent tasks moving through stages);
+         Kaizen (a philosophy of continuous, incremental process
+         improvement); Total Quality Management (an organization-wide
+         approach to continuously improving quality everywhere); Capacity
+         Utilization (the % of a company's maximum output actually being
+         used); Value Stream Mapping (visualizing all process steps to find
+         waste and improvement opportunities); Last-Mile Delivery (the
+         final delivery step, from a distribution hub to the customer's
+         door); Procurement (the process of sourcing and purchasing goods
+         and services a business needs); Outsourcing (contracting a
+         business function to an external provider instead of doing it
+         in-house); Business Process Re-engineering (radically redesigning
+         core business processes to improve performance)
+       HR/People: Employee Engagement (the level of emotional commitment
+         and motivation employees have toward their work); Attrition Rate
+         (the rate at which employees leave a company over a period);
+         Talent Acquisition (the strategic process of identifying and
+         hiring skilled people); Org Structure (how a company arranges
+         reporting lines, roles, and responsibilities); Span of Control
+         (the number of direct reports a manager oversees); Performance
+         Management (the ongoing process of setting goals and evaluating
+         employee performance); Onboarding (integrating a new employee into
+         a company and their role); 360-Degree Feedback (a review method
+         gathering input from peers, managers, and reports); Succession
+         Planning (identifying and developing employees to fill future key
+         leadership roles); Total Rewards (the complete package of pay,
+         benefits, and non-monetary value offered); Diversity, Equity &
+         Inclusion (organizational practices aimed at fair representation
+         and treatment of all employees); Psychological Safety (a team
+         environment where people feel safe to take risks and speak up);
+         Matrix Organization (a structure where employees report to more
+         than one manager, often by function and project); Change
+         Management (a structured approach to helping an organization
+         transition through change); Quiet Quitting (employees doing only
+         the minimum required, without going above and beyond)
+       Finance: Working Capital (the difference between a company's current
+         assets and current liabilities); EBITDA (Earnings Before Interest,
+         Taxes, Depreciation, and Amortization — a proxy for operating
+         profitability); Gross Margin (revenue minus cost of goods sold, as
+         a % of revenue); ROI (the profit generated from an investment
+         relative to its cost); Break-Even Point (the sales level where
+         total revenue equals total costs); Valuation (the estimated worth
+         of a company); Dilution (the reduction in existing shareholders'
+         ownership % when new shares are issued); Vesting (the process by
+         which an employee earns full ownership of granted equity over
+         time); Liquidation Preference (certain investors' right to be paid
+         back before others in an exit); Pre-Money/Post-Money Valuation (a
+         company's valuation before and after a new investment round);
+         P&L (a statement summarizing revenues, costs, and expenses over a
+         period); Balance Sheet (a statement showing assets, liabilities,
+         and equity at a point in time); Cash Flow Statement (a statement
+         showing cash moving in and out of a business over a period); Free
+         Cash Flow (cash left after capital expenditures needed to
+         maintain operations); Net Present Value (the value today of
+         future cash flows, discounted at a required rate); Internal Rate
+         of Return (the discount rate at which an investment's NPV equals
+         zero); Cost of Capital (the return a company must earn to justify
+         the cost of its funding); Debt-to-Equity Ratio (a measure of
+         financial leverage comparing total debt to shareholder equity);
+         Accounts Receivable (money owed to a company by customers for
+         goods/services already delivered); Accounts Payable (money a
+         company owes suppliers for goods/services already received);
+         Depreciation (allocating a tangible asset's cost over its useful
+         life); Sunk Cost (a cost already incurred that can't be recovered
+         and shouldn't drive future decisions); Opportunity Cost (the value
+         of the next best alternative given up when making a choice);
+         Contribution Margin (revenue remaining after variable costs,
+         available to cover fixed costs and profit)
        M&A, Dealmaking & Corporate Control: this category is especially
          valuable for MBA students and should appear in the rotation at
          least as often as the others, not treated as a rare bonus. Use the
