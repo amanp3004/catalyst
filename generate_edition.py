@@ -219,6 +219,111 @@ WORKFLOW:
        Finance: Working Capital, EBITDA, Gross Margin, ROI, Break-Even
          Point, Valuation, Dilution, Vesting, Liquidation Preference,
          Pre-Money/Post-Money Valuation, P&L (Profit & Loss), Balance Sheet
+       M&A, Dealmaking & Corporate Control: this category is especially
+         valuable for MBA students and should appear in the rotation at
+         least as often as the others, not treated as a rare bonus. Use the
+         reference definition below as the accuracy ground truth for each
+         term (many of these are niche enough that an ungrounded definition
+         risks being subtly wrong) — but still rewrite it in Catalyst's own
+         voice rather than copying it verbatim, and still add your own
+         "why it matters" and real-world example as usual.
+         Acquihire (buying a company mainly to recruit its team, not its
+         product); Reverse Merger (a private company going public by
+         merging into an existing public shell); Corporate Carve-Out
+         (selling a partial stake in a subsidiary to outside investors);
+         Asset Stripping (buying an undervalued company to sell off its
+         individual assets for profit); Killer Acquisition (buying a
+         promising startup strictly to shut down its competing product);
+         Roll-Up Merger (buying and merging many small regional companies
+         into one large entity); Conglomerate Merger (a merger between
+         companies in completely unrelated industries); Vertical
+         Integration (acquiring a business within your own supply chain);
+         Horizontal Integration (merging with a direct competitor);
+         Concentric Merger (merging with a firm in a related industry with
+         shared customers); Reverse Takeover (a smaller company acquiring
+         control of a larger target); Joint Venture (two companies forming
+         a temporary, legally independent entity for shared profit);
+         Management Buyout / MBO (a company's own executives purchase the
+         business they run); Leveraged Buyout / LBO (acquiring a company
+         using a large amount of borrowed money); Divestiture (the
+         permanent sale of an asset, subsidiary, or division); Spinoff
+         (creating an independent company by distributing new shares of a
+         subsidiary); Split-off (shareholders exchange parent-company stock
+         for shares in a new subsidiary); Carried Interest (a share of
+         profits paid to private equity/hedge fund managers as incentive);
+         Earnout (sellers get extra payout later if the business hits
+         agreed metrics); Stalking Horse Bid (an initial, binding bid on a
+         bankrupt company's assets, used to set a floor price); Cram Down
+         (a bankruptcy reorganization plan forced on dissenting creditors
+         by a court); Recapitalization (restructuring a company's debt and
+         equity mix to stabilize finances); Dual-Track Process (pursuing a
+         company sale and an IPO simultaneously, keeping both options
+         live); Poison Pill (diluting shares to make a hostile acquisition
+         prohibitively expensive); Greenmail (buying back stock from a
+         hostile bidder at a big premium to make them go away); Pac-Man
+         Defense (a target company turns around and tries to buy its
+         hostile acquirer); White Knight (a friendly acquirer that rescues
+         a firm from a hostile bid); White Squire (a friendly investor buys
+         a minority stake specifically to block a takeover); Godfather
+         Offer (an acquisition offer priced so high the board can't
+         reasonably refuse it); Shark Repellent (amending bylaws to make a
+         hostile takeover much harder); Golden Parachute (large guaranteed
+         payout to executives if they're terminated after an acquisition);
+         Tin Parachute (a smaller guaranteed payout for lower-level
+         employees let go after a takeover); Crown Jewel Defense (selling
+         off your most valuable asset specifically to make yourself
+         unappealing to a hostile bidder); Creeping Tender Offer (quietly
+         buying large blocks of stock gradually on the open market); Bear
+         Hug (submitting an acquisition offer straight to the board in a
+         way that forces public disclosure); Proxy Fight (trying to
+         persuade shareholders to vote out the current board during a
+         takeover fight); Staggered Board (board seats are elected at
+         different times specifically to slow down a hostile takeover);
+         Dawn Raid (buying a large, controlling block of shares right when
+         the market opens, before the price moves); Dual-Class Structure
+         (issuing share classes with very unequal voting rights, common in
+         founder-controlled companies); Regulatory Arbitrage (exploiting
+         differences in rules across jurisdictions to bypass regulation);
+         Golden Handcuffs (financial incentives structured to lock in key
+         employees long-term); Clawback Provision (a clause letting a
+         company reclaim bonuses already paid out, e.g. after fraud);
+         Corporate Veil (the legal separation that shields shareholders
+         from personal liability for company debts); Activist Investor (a
+         shareholder who uses their stake to force internal change at a
+         company); Corporate Raider (an investor who targets undervalued
+         firms to force aggressive breakups); Shell Corporation (an empty
+         corporate entity with no real business operations); Blank Check
+         Company (a company with no specific business plan, raised to
+         later acquire something — the SPAC structure); No-Shop Clause (a
+         seller is contractually barred from soliciting other offers
+         during a deal); Go-Shop Period (a window letting a seller look for
+         a better bid even after signing an initial agreement); Break-Up
+         Fee (a penalty a seller pays if they walk away from a deal);
+         Zombie Company (a firm that only generates enough cash to cover
+         interest on its debt, never paying it down); Unicorn (a private
+         startup valued over $1 billion); Decacorn (a private startup
+         valued over $10 billion); Vulture Capitalist (an investor who buys
+         distressed firms specifically to strip and sell their assets);
+         Mezzanine Financing (high-risk debt that converts to equity if the
+         borrower defaults); Bridge Loan (short-term financing that bridges
+         the gap until permanent capital comes in); Dutch Auction (a
+         bidding process where the price falls until a buyer accepts);
+         Greenfield Investment (building a brand new subsidiary from
+         scratch in a foreign market); Brownfield Investment (buying or
+         leasing existing facilities in a foreign market instead of
+         building new); Venture Debt (debt financing offered specifically
+         to high-growth, VC-backed startups); Special Purpose Vehicle / SPV
+         (a subsidiary created specifically to isolate a particular
+         financial risk); Capital Flight (large-scale movement of financial
+         assets out of a country due to instability); Stagflation (an
+         economy experiencing slow growth alongside high inflation at the
+         same time); Capital Intensive (a business model that requires
+         massive up-front investment in physical assets); Asset Light (a
+         business model that minimizes physical assets to maximize
+         operating leverage — the opposite of capital intensive);
+         Bootstrapping (building a company using only personal finances and
+         operating revenue, no outside capital); Down Round (a funding
+         round that values the company lower than its previous round).
      ...or an equally standard term from any of these functions — never
      invent a term. A "RECENTLY USED TERMS" list will be provided each run
      (terms used in roughly the last 35 days) — treat it as a hard
